@@ -1,8 +1,13 @@
 # TRIGGER Open edX Platform
 
 [![TRIGGER Project](https://img.shields.io/badge/TRIGGER-Project-blue)](https://trigger-project.eu/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Open edX](https://img.shields.io/badge/Open%20edX-Palm-blue)](https://openedx.org/)
+[![Tutor](https://img.shields.io/badge/Tutor-17.x-green)](https://docs.tutor.overhang.io/)
 
 This repository contains the complete Docker-based Open edX environment for the **TRIGGER** project, powered by [Tutor](https://docs.tutor.overhang.io/).
+
+**Repository:** https://github.com/tamagusko/trigger
 
 ## Overview
 
@@ -28,8 +33,8 @@ Visit the official TRIGGER project website: [https://trigger-project.eu/](https:
 
 1. **Clone this repository:**
    ```bash
-   git clone <repository-url>
-   cd TRIGGER_course
+   git clone https://github.com/tamagusko/trigger.git
+   cd trigger
    ```
 
 2. **Run the automated setup:**
@@ -64,6 +69,11 @@ TRIGGER_course/
 ```
 
 ## Documentation
+
+### Getting Started
+
+- **[First Run Guide](docs/first-run.md)** - Quick start for first-time users
+- **[Testing Guide](docs/TESTING.md)** - How to test the scripts safely
 
 ### For Developers
 
@@ -159,11 +169,18 @@ If you encounter issues:
 
 ## Contributing
 
-This project is maintained by the TRIGGER team. For questions or contributions, please contact [Add contact information].
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+For questions or contributions, please:
+- Open an issue on GitHub
+- Check existing documentation
+- Contact the TRIGGER team via the project website
 
 ## License
 
-[Add license information]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Note:** This project uses Open edX and Tutor, which are licensed under the GNU Affero General Public License (AGPL).
 
 ## Acknowledgments
 
