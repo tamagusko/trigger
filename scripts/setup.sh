@@ -152,8 +152,14 @@ check_prerequisites() {
     print_success "pip3 is installed"
 
     # Check disk space (need at least 20GB)
-    available_space=$(df -BG . | awk 'NR==2 {print $4}' | sed 's/G//')
-    if [ "$available_space" -lt 20 ]; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        available_space=$(df -g . | awk 'NR==2 {print $4}')
+    else
+        # Linux
+        available_space=$(df -BG . | awk 'NR==2 {print $4}' | sed 's/G//')
+    fi
+    if [ -z "$available_space" ] || [ "$available_space" -lt 20 ]; then
         print_warning "Low disk space: ${available_space}GB available (20GB+ recommended)"
         read -p "Continue anyway? (y/n) " -n 1 -r
         echo ""
@@ -299,7 +305,6 @@ enable_plugins() {
     # Enable discovery plugin
     print_message "$BLUE" "Enabling discovery plugin..."
     if tutor plugins enable discovery 2>/dev/null; then
-        tutor local do init -p discovery
         print_success "Discovery plugin enabled"
     else
         print_warning "Discovery plugin not available (may require separate installation)"
@@ -316,11 +321,13 @@ enable_plugins() {
     # Enable MFE plugin
     print_message "$BLUE" "Enabling MFE (Micro-Frontends) plugin..."
     if tutor plugins enable mfe 2>/dev/null; then
-        tutor config save
         print_success "MFE plugin enabled"
     else
         print_warning "MFE plugin not available"
     fi
+
+    # Save configuration after enabling plugins
+    tutor config save
 
     echo ""
 }
