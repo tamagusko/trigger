@@ -1,0 +1,290 @@
+# TRIGGER Open edX - Tutor Configuration Example
+#
+# This file shows example configurations for different deployment scenarios.
+# Copy and modify this file according to your needs.
+#
+# To use:
+#   1. Initialize Tutor: tutor config save
+#   2. Edit config.yml with your settings
+#   3. Apply changes: tutor config save
+#   4. Restart: tutor local restart
+
+# =============================================================================
+# COMMON SETTINGS
+# =============================================================================
+
+# Platform Information
+PLATFORM_NAME: "TRIGGER"
+PLATFORM_DESCRIPTION: "TRIGGER Open edX Platform"
+CONTACT_EMAIL: "admin@trigger-project.eu"
+
+# Open edX Version (use stable releases)
+# Options: palm, olive, nutmeg, etc.
+OPENEDX_COMMON_VERSION: "palm.5"
+
+# Language and Localization
+LANGUAGE_CODE: "en"
+TIME_ZONE: "Europe/Dublin"
+
+# =============================================================================
+# LOCAL DEVELOPMENT CONFIGURATION
+# =============================================================================
+# Use these settings for local development on your computer
+
+# Domains (these work automatically for local development)
+LMS_HOST: "local.overhang.io"
+CMS_HOST: "studio.local.overhang.io"
+
+# HTTPS (disabled for local)
+ENABLE_HTTPS: false
+
+# Web Proxy
+ENABLE_WEB_PROXY: true
+
+# Ports (default)
+# LMS will be available on port 80 (http://local.overhang.io)
+
+# =============================================================================
+# PRODUCTION CONFIGURATION (AWS/Cloud)
+# =============================================================================
+# Use these settings when deploying to AWS or other cloud providers
+
+# Production Domains (replace with your actual domains)
+# LMS_HOST: "courses.trigger-project.eu"
+# CMS_HOST: "studio.trigger-project.eu"
+
+# HTTPS (enable for production)
+# ENABLE_HTTPS: true
+
+# SSL Certificates (automatic with Let's Encrypt)
+# Tutor will automatically obtain and renew certificates
+
+# =============================================================================
+# OPTIONAL: CUSTOM DOMAINS
+# =============================================================================
+# If using custom domains for MFE or other services
+
+# LMS_HOST: "learn.yourdomain.com"
+# CMS_HOST: "studio.yourdomain.com"
+# PREVIEW_LMS_HOST: "preview.yourdomain.com"
+# MFE_HOST: "apps.yourdomain.com"
+
+# =============================================================================
+# EMAIL CONFIGURATION
+# =============================================================================
+# Configure email for notifications, password resets, etc.
+
+# Gmail Example:
+# SMTP_HOST: "smtp.gmail.com"
+# SMTP_PORT: 587
+# SMTP_USE_TLS: true
+# SMTP_USE_SSL: false
+# SMTP_USERNAME: "your-email@gmail.com"
+# SMTP_PASSWORD: "your-app-password"  # Use App Password, not regular password
+# EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+
+# AWS SES Example:
+# SMTP_HOST: "email-smtp.us-east-1.amazonaws.com"
+# SMTP_PORT: 587
+# SMTP_USE_TLS: true
+# SMTP_USERNAME: "your-ses-username"
+# SMTP_PASSWORD: "your-ses-password"
+
+# SendGrid Example:
+# SMTP_HOST: "smtp.sendgrid.net"
+# SMTP_PORT: 587
+# SMTP_USE_TLS: true
+# SMTP_USERNAME: "apikey"
+# SMTP_PASSWORD: "your-sendgrid-api-key"
+
+# =============================================================================
+# DATABASE CONFIGURATION
+# =============================================================================
+# Tutor manages databases automatically, but you can customize if needed
+
+# MySQL Configuration (advanced)
+# MYSQL_ROOT_PASSWORD: "auto-generated-by-tutor"
+# MYSQL_DATABASE: "openedx"
+
+# MongoDB Configuration (advanced)
+# MONGODB_DATABASE: "openedx"
+
+# =============================================================================
+# STORAGE CONFIGURATION
+# =============================================================================
+# Configure where to store media files
+
+# Local Storage (default)
+# Files stored in data/ directory
+
+# AWS S3 Storage (recommended for production):
+# OPENEDX_AWS_ACCESS_KEY: "your-access-key"
+# OPENEDX_AWS_SECRET_ACCESS_KEY: "your-secret-key"
+# OPENEDX_AWS_STORAGE_BUCKET_NAME: "trigger-openedx-storage"
+# OPENEDX_AWS_S3_REGION_NAME: "eu-west-1"
+
+# =============================================================================
+# PERFORMANCE TUNING
+# =============================================================================
+
+# Worker Configuration
+# Increase for better performance (requires more RAM)
+# OPENEDX_LMS_UWSGI_WORKERS: 4
+# OPENEDX_CMS_UWSGI_WORKERS: 2
+
+# Celery Workers (background tasks)
+# OPENEDX_CELERY_WORKER_CONCURRENCY: 4
+
+# =============================================================================
+# FEATURES
+# =============================================================================
+
+# Enable/disable features
+FEATURES:
+  # Course Discovery
+  ENABLE_COURSE_DISCOVERY: true
+
+  # Certificates
+  CERTIFICATES_HTML_VIEW: true
+  CERTIFICATES_ENABLED: true
+
+  # OAuth/SSO
+  ENABLE_OAUTH2_PROVIDER: true
+  ENABLE_THIRD_PARTY_AUTH: false
+
+  # Mobile Apps
+  ENABLE_MOBILE_REST_API: true
+
+  # Discussion Forums
+  ENABLE_DISCUSSION_SERVICE: true
+
+  # Grading
+  ENABLE_GRADE_DOWNLOADS: true
+
+  # Course Import/Export
+  ENABLE_EXPORT_GIT: false
+  ALLOW_COURSE_STAFF_GRADE_DOWNLOADS: true
+
+# =============================================================================
+# THEME CUSTOMIZATION
+# =============================================================================
+
+# Custom Theme (requires building custom image)
+# INDIGO_ENABLE_THEME: false
+# INDIGO_PRIMARY_COLOR: "#3b82f6"
+# INDIGO_FOOTER_NAV_LINKS: []
+
+# Logo URLs (must be publicly accessible)
+# LOGO_URL: "https://yourdomain.com/logo.png"
+# LOGO_TRADEMARK_URL: "https://yourdomain.com/logo-small.png"
+# FAVICON_URL: "https://yourdomain.com/favicon.ico"
+
+# =============================================================================
+# PLUGINS
+# =============================================================================
+# Enable/disable Tutor plugins
+
+# Discovery Plugin (course catalog)
+# tutor plugins enable discovery
+# DISCOVERY_VERSION: "palm.0"
+
+# E-commerce Plugin
+# tutor plugins enable ecommerce
+# ECOMMERCE_ENABLED: true
+
+# Forum Plugin (discussions)
+# tutor plugins enable forum
+
+# MFE Plugin (Micro-Frontends - modern UI)
+# tutor plugins enable mfe
+# MFE_HOST: "apps.yourdomain.com"
+
+# Xqueue (external graders)
+# tutor plugins enable xqueue
+
+# Notes (student annotations)
+# tutor plugins enable notes
+
+# =============================================================================
+# ADVANCED SETTINGS
+# =============================================================================
+
+# Docker Image Configuration
+# DOCKER_IMAGE_OPENEDX: "docker.io/overhangio/openedx:17.0.0"
+# DOCKER_IMAGE_MYSQL: "docker.io/mysql:8.0"
+# DOCKER_IMAGE_MONGODB: "docker.io/mongo:4.4"
+# DOCKER_IMAGE_REDIS: "docker.io/redis:6.2"
+
+# Service URLs (usually auto-configured)
+# LMS_HOST: "courses.trigger-project.eu"
+# CMS_HOST: "studio.trigger-project.eu"
+
+# Session Configuration
+# SESSION_COOKIE_DOMAIN: ".trigger-project.eu"
+
+# =============================================================================
+# MONITORING AND LOGGING
+# =============================================================================
+
+# Log Level
+# LOG_LEVEL: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+# Sentry Error Tracking (optional)
+# SENTRY_DSN: "https://your-sentry-dsn@sentry.io/project-id"
+
+# =============================================================================
+# SECURITY SETTINGS
+# =============================================================================
+
+# CSRF Configuration (production)
+# CSRF_COOKIE_SECURE: true
+# SESSION_COOKIE_SECURE: true
+
+# CORS Configuration (if using external apps)
+# CORS_ORIGIN_ALLOW_ALL: false
+# CORS_ORIGIN_WHITELIST: ["https://yourdomain.com"]
+
+# =============================================================================
+# BACKUP CONFIGURATION
+# =============================================================================
+# These settings are used by backup/restore scripts
+
+# Backup Retention
+# BACKUP_RETENTION_DAYS: 7
+
+# S3 Backup Destination
+# BACKUP_S3_BUCKET: "trigger-backups"
+# BACKUP_S3_REGION: "eu-west-1"
+
+# =============================================================================
+# NOTES
+# =============================================================================
+
+# 1. After modifying this file, run: tutor config save
+# 2. Restart services to apply changes: tutor local restart
+# 3. Some changes require rebuilding images: tutor images build openedx
+# 4. Never commit secrets or passwords to Git!
+# 5. Use environment-specific configuration files for different deployments
+
+# =============================================================================
+# USEFUL COMMANDS
+# =============================================================================
+
+# View current configuration:
+#   tutor config printroot
+#   tutor config printvalue SETTING_NAME
+
+# Save configuration:
+#   tutor config save
+
+# Interactive configuration:
+#   tutor config save --interactive
+
+# Set specific value:
+#   tutor config save --set SETTING_NAME=value
+
+# Restart services:
+#   tutor local restart
+
+# View logs:
+#   tutor local logs -f

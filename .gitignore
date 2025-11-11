@@ -1,0 +1,73 @@
+# TRIGGER Open edX Project - Git Ignore File
+
+# Tutor-generated secrets and configuration
+env/config.yml
+env/secrets.yml
+
+# Docker volumes
+*.vol
+
+# Tutor data directory
+env/data/
+
+# Logs
+*.log
+logs/
+env/logs/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Backup files
+backups/*.tar.gz
+backups/*.sql
+backups/*.zip
+
+# SSL certificates (should be managed separately)
+*.pem
+*.key
+*.crt
+
+# Tutor plugins cache
+env/plugins/
+
+# Local development files
+local/
+tmp/
+temp/
+
+# OS files
+Thumbs.db
+.DS_Store
