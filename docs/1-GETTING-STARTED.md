@@ -73,8 +73,8 @@ http://studio.local.overhang.io
 http://local.overhang.io
 
 **Login Information:**
-- Email: tamagusko@gmail.com
-- Password: AdminTRIGGER2024!
+- Email: email@email.com
+- Password: (set during installation)
 
 ---
 

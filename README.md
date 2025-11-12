@@ -47,43 +47,37 @@ Visit the official TRIGGER project website: [https://trigger-project.eu/](https:
    - LMS (Learning Management System): http://local.overhang.io
    - Studio (Course Authoring): http://studio.local.overhang.io
 
-For detailed instructions, see [docs/setup.md](docs/setup.md).
+For detailed instructions, see [docs/1-GETTING-STARTED.md](docs/1-GETTING-STARTED.md).
 
 ## Project Structure
 
 ```
 TRIGGER_course/
-├── docs/               # Documentation
-│   ├── setup.md        # Local installation guide
-│   ├── deploy.md       # AWS deployment guide
-│   ├── usage.md        # Platform usage instructions
-│   └── maintenance.md  # Backup and maintenance guide
-├── env/                # Tutor environment files (generated)
-├── scripts/            # Helper scripts
-│   ├── setup.sh        # Automated setup script
-│   ├── backup.sh       # Backup script
-│   ├── restore.sh      # Restore script
-│   └── update.sh       # Update script
-├── .gitignore          # Git ignore rules
-└── README.md           # This file
+├── docs/                      # Documentation
+│   ├── README.md              # Documentation index
+│   ├── 1-GETTING-STARTED.md   # Installation guide
+│   ├── 2-CREATING-COURSES.md  # Course creation guide
+│   ├── 3-MANAGING-STUDENTS.md # Student management guide
+│   └── 4-DEPLOYMENT.md        # Cloud deployment guide
+├── env/                       # Tutor environment files (generated)
+├── scripts/                   # Helper scripts
+│   ├── setup.sh               # Automated setup script
+│   ├── fix-hosts.sh           # Fix local domain resolution
+│   ├── backup.sh              # Backup script
+│   ├── restore.sh             # Restore script
+│   └── update.sh              # Update script
+├── .gitignore                 # Git ignore rules
+└── README.md                  # This file
 ```
 
 ## Documentation
 
-### Getting Started
+Read the complete guides in the [docs](docs/) folder:
 
-- **[First Run Guide](docs/first-run.md)** - Quick start for first-time users
-- **[Testing Guide](docs/TESTING.md)** - How to test the scripts safely
-
-### For Developers
-
-- **[Setup Guide](docs/setup.md)** - Install and configure Open edX locally
-- **[Deployment Guide](docs/deploy.md)** - Deploy to AWS cloud services
-- **[Maintenance Guide](docs/maintenance.md)** - Update, backup, and restore
-
-### For Course Creators
-
-- **[Usage Guide](docs/usage.md)** - Create courses, manage users, and use the platform
+1. **[Getting Started](docs/1-GETTING-STARTED.md)** - Install and setup (Mac/Linux/Windows)
+2. **[Creating Courses](docs/2-CREATING-COURSES.md)** - Make your first online course
+3. **[Managing Students](docs/3-MANAGING-STUDENTS.md)** - Enroll and track students
+4. **[Deployment](docs/4-DEPLOYMENT.md)** - Deploy to the cloud (advanced)
 
 ## Common Commands
 
