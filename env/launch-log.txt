@@ -2904,3 +2904,828 @@ Initialising MySQL...
 mysql: [Warning] Using a password on the command line interface can be insecure.
 ERROR 2003 (HY000): Can't connect to MySQL server on 'mysql:3306' (111)
     [1/10] Waiting for MySQL service (this may take a while)...
+mysql: [Warning] Using a password on the command line interface can be insecure.
+MySQL is up and running
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Running init task in lms
+docker compose -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.yml' -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.prod.yml' --project-name tutor_local -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.jobs.yml' run --rm -T lms-job sh -e -c '# Get or create Meilisearch API key
+python -c "
+import meilisearch
+client = meilisearch.Client('"'"'http://meilisearch:7700'"'"', '"'"'zHSVeUWAxx8OcQ5c8DznEQIQ'"'"')
+try:
+    client.get_key('"'"'aff4ee47-ba25-464c-ace2-7b64500bfdd9'"'"')
+    print('"'"'Key already exists'"'"')
+except meilisearch.errors.MeilisearchApiError:
+    print('"'"'Key does not exist: creating...'"'"')
+    client.create_key({
+        '"'"'name'"'"': '"'"'Open edX backend API key'"'"',
+        '"'"'uid'"'"': '"'"'aff4ee47-ba25-464c-ace2-7b64500bfdd9'"'"',
+        '"'"'actions'"'"': ['"'"'*'"'"'],
+        '"'"'indexes'"'"': ['"'"'tutor_*'"'"'],
+        '"'"'expiresAt'"'"': None,
+        '"'"'description'"'"': '"'"'Use it for backend API calls -- Created by Tutor'"'"',
+    })
+"'
+ Container tutor_local-mysql-1  Running
+ Container tutor_local-permissions-1  Created
+ Container tutor_local-meilisearch-1  Running
+ Container tutor_local-mongodb-1  Running
+ Container tutor_local-permissions-1  Starting
+ Container tutor_local-permissions-1  Started
+Key already exists
+Running init task in lms
+docker compose -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.yml' -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.prod.yml' --project-name tutor_local -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.jobs.yml' run --rm -T lms-job sh -e -c 'dockerize -wait tcp://mysql:3306 -timeout 20s
+dockerize -wait tcp://mongodb:27017 -timeout 20s
+
+echo "Loading settings $DJANGO_SETTINGS_MODULE"
+
+./manage.py lms migrate
+
+# Create meilisearch indexes
+./manage.py lms shell -c "import search.meilisearch; search.meilisearch.create_indexes()"
+
+# Create oauth2 apps for CMS SSO
+# https://github.com/openedx/edx-platform/blob/master/docs/guides/studio_oauth.rst
+./manage.py lms manage_user cms cms@openedx --unusable-password
+./manage.py lms create_dot_application \
+  --grant-type authorization-code \
+  --redirect-uris "http://studio.local.overhang.io/complete/edx-oauth2/" \
+  --client-id cms-sso \
+  --client-secret K31W0ESK8Z1nhlEhFLCvxCla \
+  --scopes user_id \
+  --skip-authorization \
+  --update cms-sso cms
+./manage.py lms create_dot_application \
+  --grant-type authorization-code \
+  --redirect-uris "http://studio.local.overhang.io:8001/complete/edx-oauth2/" \
+  --client-id cms-sso-dev \
+  --client-secret K31W0ESK8Z1nhlEhFLCvxCla \
+  --scopes user_id \
+  --skip-authorization \
+  --update cms-sso-dev cms
+
+
+# Fix incorrect uploaded file path
+if [ -d /openedx/data/uploads/ ]; then
+  if [ -n "$(ls -A /openedx/data/uploads/)" ]; then
+    echo "Migrating LMS uploaded files to shared directory"
+    mv /openedx/data/uploads/* /openedx/media/
+    rm -rf /openedx/data/uploads/
+  fi
+fi
+
+# Create waffle switches to enable some features, if they have not been explicitly defined before
+# Completion tracking: add green ticks to every completed unit
+(./manage.py lms waffle_switch --list | grep completion.enable_completion_tracking) || ./manage.py lms waffle_switch --create completion.enable_completion_tracking on'
+ Container tutor_local-permissions-1  Created
+ Container tutor_local-mysql-1  Running
+ Container tutor_local-mongodb-1  Running
+ Container tutor_local-meilisearch-1  Running
+ Container tutor_local-permissions-1  Starting
+ Container tutor_local-permissions-1  Started
+2025/11/11 23:26:10 Ready: tcp://mysql:3306.
+2025/11/11 23:26:10 Ready: tcp://mongodb:27017.
+Loading settings lms.envs.tutor.production
+2025-11-11 23:26:11,610 WARNING 17 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:11,656 WARNING 17 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:11,658 WARNING 17 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:11,659 WARNING 17 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:14,332 WARNING 17 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+Operations to perform:
+  Apply all migrations: admin, agreements, announcements, api_admin, assessment, auth, badges, blackboard, block_structure, bookmarks, branding, bulk_email, bulk_grades, calendar_sync, canvas, catalog, celery_utils, certificates, commerce, completion, consent, content_libraries, content_tagging, content_type_gating, contentserver, contenttypes, cornerstone, cors_csrf, course_action_state, course_apps, course_date_signals, course_duration_limits, course_goals, course_groups, course_home_api, course_live, course_modes, course_overviews, courseware, crawlers, credentials, credit, dark_lang, database_fixups, degreed, degreed2, discounts, discussions, django_celery_results, django_comment_common, django_notify, edx_name_affirmation, edx_proctoring, edx_when, edxval, embargo, enterprise, entitlements, experiments, external_user_ids, forum, grades, instructor_task, integrated_channel, learning_sequences, lms_xblock, lti1p3_tool_config, lti_consumer, milestones, mobile_api, moodle, notifications, oauth2_provider, oauth_dispatch, oel_collections, oel_components, oel_contents, oel_publishing, oel_sections, oel_subsections, oel_tagging, oel_units, organizations, program_enrollments, programs, push_notifications, redirects, rss_proxy, sap_success_factors, schedules, sessions, site_configuration, sites, social_django, split_modulestore_django, staffgrader, static_replace, status, student, submissions, super_csv, support, survey, survey_report, system_wide_roles, teams, theming, third_party_auth, thumbnail, track, user_api, user_authn, user_tasks, user_tours, util, verify_student, video_config, video_pipeline, waffle, waffle_utils, wiki, workflow, xapi, xblock_django
+Running migrations:
+  No migrations to apply.
+  Your models in app(s): 'enterprise' have changes that are not yet reflected in a migration, and so won't be applied.
+  Run 'manage.py makemigrations' to make new migrations, and then re-run 'manage.py migrate' to apply them.
+2025-11-11 23:26:19,110 WARNING 37 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:19,130 WARNING 37 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:19,131 WARNING 37 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:19,131 WARNING 37 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:21,810 WARNING 57 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:21,827 WARNING 57 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:21,827 WARNING 57 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:21,828 WARNING 57 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:23,254 WARNING 57 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+Found existing user: "cms"
+Adding user "cms" to groups []
+Removing user "cms" from groups []
+2025-11-11 23:26:24,886 WARNING 77 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:24,903 WARNING 77 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:24,904 WARNING 77 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:24,904 WARNING 77 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:26,346 WARNING 77 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+2025-11-11 23:26:26,758 INFO 77 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:97 - Updated cms-sso application with id: 2, client_id: cms-sso, and client_secret: K31W0ESK8Z1nhlEhFLCvxCla
+2025-11-11 23:26:26,760 INFO 77 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:117 - Updated application access for cms-sso with scopes: user_id
+2025-11-11 23:26:27,827 WARNING 97 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:27,845 WARNING 97 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:27,846 WARNING 97 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:27,846 WARNING 97 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:29,318 WARNING 97 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+2025-11-11 23:26:29,733 INFO 97 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:97 - Updated cms-sso-dev application with id: 3, client_id: cms-sso-dev, and client_secret: K31W0ESK8Z1nhlEhFLCvxCla
+2025-11-11 23:26:29,734 INFO 97 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:117 - Updated application access for cms-sso-dev with scopes: user_id
+2025-11-11 23:26:30,831 WARNING 118 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:30,848 WARNING 118 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:30,849 WARNING 118 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:30,849 WARNING 118 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:32,165 WARNING 118 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+completion.enable_completion_tracking: on
+Running init task in cms
+docker compose -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.yml' -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.prod.yml' --project-name tutor_local -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.jobs.yml' run --rm -T cms-job sh -e -c 'dockerize -wait tcp://mysql:3306 -timeout 20s
+
+echo "Loading settings $DJANGO_SETTINGS_MODULE"
+
+./manage.py cms migrate
+
+# Fix incorrect uploaded file path
+if [ -d /openedx/data/uploads/ ]; then
+  if [ -n "$(ls -A /openedx/data/uploads/)" ]; then
+    echo "Migrating CMS uploaded files to shared directory"
+    mv /openedx/data/uploads/* /openedx/media/
+    rm -rf /openedx/data/uploads/
+  fi
+fi
+
+# Create the index for studio and courseware content. Because we specify --init,
+# this will not populate the index (potentially slow) nor replace any existing
+# index (resulting in broken features until it is complete). If either of those
+# are necessary, it will print instructions on what command to run to do so.
+./manage.py cms reindex_studio --experimental --init
+# Create the courseware content index
+./manage.py cms reindex_course --active'
+ Container tutor_local-mysql-1  Running
+ Container tutor_local-permissions-1  Created
+ Container tutor_local-meilisearch-1  Running
+ Container tutor_local-redis-1  Running
+ Container tutor_local-mongodb-1  Running
+ Container tutor_local-permissions-1  Starting
+ Container tutor_local-permissions-1  Started
+2025/11/11 23:26:34 Ready: tcp://mysql:3306.
+Loading settings cms.envs.tutor.production
+2025-11-11 23:26:35,568 WARNING 12 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:35,590 WARNING 12 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:35,590 WARNING 12 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:35,591 WARNING 12 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:36,947 WARNING 12 [py.warnings] [user None] [ip None] warnings.py:110 - <frozen importlib._bootstrap>:1047: ImportWarning: _SixMetaPathImporter.find_spec() not found; falling back to find_module()
+
+2025-11-11 23:26:36,947 WARNING 12 [py.warnings] [user None] [ip None] warnings.py:110 - <frozen importlib._bootstrap>:673: ImportWarning: _SixMetaPathImporter.exec_module() not found; falling back to load_module()
+
+2025-11-11 23:26:36,953 WARNING 12 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/boto/plugin.py:40: DeprecationWarning: the imp module is deprecated in favour of importlib and slated for removal in Python 3.12; see the module's documentation for alternative uses
+  import imp
+
+2025-11-11 23:26:37,123 WARNING 12 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+Operations to perform:
+  Apply all migrations: admin, announcements, api_admin, assessment, auth, blackboard, block_structure, bookmarks, canvas, catalog, celery_utils, completion, consent, content_libraries, content_staging, content_tagging, content_type_gating, contentserver, contentstore, contenttypes, cornerstone, cors_csrf, course_action_state, course_apps, course_creators, course_date_signals, course_duration_limits, course_groups, course_live, course_modes, course_overviews, courseware, crawlers, credit, dark_lang, database_fixups, degreed, degreed2, discounts, discussions, django_celery_results, django_comment_common, django_notify, edx_name_affirmation, edx_proctoring, edx_when, edxval, embargo, enterprise, entitlements, experiments, external_user_ids, import_from_modulestore, integrated_channel, learning_sequences, lti1p3_tool_config, lti_consumer, milestones, moodle, notifications, oauth2_provider, oauth_dispatch, oel_collections, oel_components, oel_contents, oel_publishing, oel_sections, oel_subsections, oel_tagging, oel_units, organizations, program_enrollments, programs, push_notifications, redirects, sap_success_factors, schedules, search, sessions, site_configuration, sites, social_django, split_modulestore_django, staffgrader, static_replace, student, submissions, survey, system_wide_roles, tagging, theming, track, user_api, user_authn, user_tasks, verify_student, video_config, video_pipeline, waffle, waffle_utils, wiki, workflow, xapi, xblock_config, xblock_django
+Running migrations:
+  No migrations to apply.
+  Your models in app(s): 'enterprise' have changes that are not yet reflected in a migration, and so won't be applied.
+  Run 'manage.py makemigrations' to make new migrations, and then re-run 'manage.py migrate' to apply them.
+2025-11-11 23:26:41,423 WARNING 32 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:41,470 WARNING 32 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:41,472 WARNING 32 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:41,473 WARNING 32 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:42,782 WARNING 32 [py.warnings] [user None] [ip None] warnings.py:110 - <frozen importlib._bootstrap>:1047: ImportWarning: _SixMetaPathImporter.find_spec() not found; falling back to find_module()
+
+2025-11-11 23:26:42,782 WARNING 32 [py.warnings] [user None] [ip None] warnings.py:110 - <frozen importlib._bootstrap>:673: ImportWarning: _SixMetaPathImporter.exec_module() not found; falling back to load_module()
+
+2025-11-11 23:26:42,784 WARNING 32 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/boto/plugin.py:40: DeprecationWarning: the imp module is deprecated in favour of importlib and slated for removal in Python 3.12; see the module's documentation for alternative uses
+  import imp
+
+2025-11-11 23:26:42,910 WARNING 32 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+The studio search index is empty. Please run ./manage.py cms reindex_studio --experimental [--incremental]
+2025-11-11 23:26:44,824 WARNING 52 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:44,842 WARNING 52 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:44,842 WARNING 52 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:44,843 WARNING 52 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:45,856 WARNING 52 [py.warnings] [user None] [ip None] warnings.py:110 - <frozen importlib._bootstrap>:1047: ImportWarning: _SixMetaPathImporter.find_spec() not found; falling back to find_module()
+
+2025-11-11 23:26:45,857 WARNING 52 [py.warnings] [user None] [ip None] warnings.py:110 - <frozen importlib._bootstrap>:673: ImportWarning: _SixMetaPathImporter.exec_module() not found; falling back to load_module()
+
+2025-11-11 23:26:45,859 WARNING 52 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/boto/plugin.py:40: DeprecationWarning: the imp module is deprecated in favour of importlib and slated for removal in Python 3.12; see the module's documentation for alternative uses
+  import imp
+
+2025-11-11 23:26:45,988 WARNING 52 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+2025-11-11 23:26:46,397 WARNING 52 [root] [user None] [ip None] reindex_course.py:138 - Selected 0 active courses over a total of 0.
+2025-11-11 23:26:46,397 WARNING 52 [root] [user None] [ip None] reindex_course.py:159 - Reindexing 0 courses...
+2025-11-11 23:26:46,397 WARNING 52 [root] [user None] [ip None] reindex_course.py:180 - 0 of 0 courses reindexed succesfully. Total running time: 0.0 seconds.
+Running init task in mysql
+docker compose -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.yml' -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.prod.yml' --project-name tutor_local -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.jobs.yml' run --rm -T mysql-job sh -e -c 'mysql -u root --password="Cauqiug7" --host "mysql" --port 3306 -e '"'"'CREATE DATABASE IF NOT EXISTS discovery;'"'"'
+mysql -u root --password="Cauqiug7" --host "mysql" --port 3306 -e "CREATE USER IF NOT EXISTS '"'"'discovery'"'"';"
+mysql -u root --password="Cauqiug7" --host "mysql" --port 3306 -e "ALTER USER '"'"'discovery'"'"'@'"'"'%'"'"' IDENTIFIED BY '"'"'ba6F8s6v'"'"';"
+mysql -u root --password="Cauqiug7" --host "mysql" --port 3306 -e "GRANT ALL ON discovery.* TO '"'"'discovery'"'"'@'"'"'%'"'"';"'
+ Container tutor_local-mysql-1  Running
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Running init task in lms
+docker compose -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.yml' -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.prod.yml' --project-name tutor_local -f '/Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.jobs.yml' run --rm -T lms-job sh -e -c '# Modify users created with an incorrect email and that might clash with the newly created users
+./manage.py lms shell -c \
+  "from django.contrib.auth import get_user_model;\
+  get_user_model().objects.filter(username='"'"'discovery'"'"').exclude(email='"'"'discovery@openedx'"'"').update(email='"'"'discovery@openedx'"'"')"
+./manage.py lms shell -c \
+  "from django.contrib.auth import get_user_model;\
+  get_user_model().objects.filter(username='"'"'lms_catalog_service_user'"'"').exclude(email='"'"'lms_catalog_service_user@openedx'"'"').update(email='"'"'lms_catalog_service_user@openedx'"'"')"
+
+./manage.py lms shell -c \
+  "from openedx.core.djangoapps.programs.models import ProgramsApiConfig;\
+  ProgramsApiConfig.current().enabled or \
+  ProgramsApiConfig.objects.create(marketing_path='"'"'/programs'"'"', enabled=True)"
+
+./manage.py lms manage_user discovery discovery@openedx --staff --superuser --unusable-password
+./manage.py lms manage_user lms_catalog_service_user lms_catalog_service_user@openedx --staff --unusable-password
+
+# Development client
+./manage.py lms create_dot_application \
+    --grant-type client-credentials \
+    --redirect-uris "http://discovery.local.overhang.io:8381/complete/edx-oauth2/" \
+    --client-id discovery-dev \
+    --client-secret dsOziFwP \
+    --scopes user_id \
+    --skip-authorization \
+    --update \
+    discovery-dev \
+    discovery
+./manage.py lms create_dot_application \
+    --grant-type authorization-code \
+    --redirect-uris "http://discovery.local.overhang.io:8381/complete/edx-oauth2/" \
+    --client-id discovery-sso-dev \
+    --client-secret fUcjFNCo \
+    --scopes user_id \
+    --skip-authorization \
+    --update \
+    discovery-sso-dev \
+    discovery
+
+# Production client
+./manage.py lms create_dot_application \
+    --grant-type client-credentials \
+    --redirect-uris "http://discovery.local.overhang.io/complete/edx-oauth2/" \
+    --client-id discovery \
+    --client-secret dsOziFwP \
+    --scopes user_id \
+    --skip-authorization \
+    --update \
+    discovery \
+    discovery
+./manage.py lms create_dot_application \
+    --grant-type authorization-code \
+    --redirect-uris "http://discovery.local.overhang.io/complete/edx-oauth2/" \
+    --client-id discovery-sso \
+    --client-secret fUcjFNCo \
+    --scopes user_id \
+    --skip-authorization \
+    --update \
+    discovery-sso \
+    discovery
+
+# The COURSE_CATALOG_API_URL used to be stored in a setting, but is now a site
+# configuration -- which means that it takes different values for different
+# sites. This is important because the programs and courses returned for each
+# site will differ.
+./manage.py lms create_or_update_site_configuration local.overhang.io --configuration '"'"'{"COURSE_CATALOG_API_URL": "http://discovery.local.overhang.io/api/v1"}'"'"' --enabled
+./manage.py lms create_or_update_site_configuration local.overhang.io:8000 --configuration '"'"'{"COURSE_CATALOG_API_URL": "http://discovery.local.overhang.io:8381/api/v1"}'"'"' --enabled'
+ Container tutor_local-mysql-1  Running
+ Container tutor_local-permissions-1  Created
+ Container tutor_local-meilisearch-1  Running
+ Container tutor_local-mongodb-1  Running
+ Container tutor_local-permissions-1  Starting
+ Container tutor_local-permissions-1  Started
+2025-11-11 23:26:49,392 WARNING 7 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:49,409 WARNING 7 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:49,410 WARNING 7 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:49,410 WARNING 7 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:51,742 WARNING 27 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:51,761 WARNING 27 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:51,762 WARNING 27 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:51,762 WARNING 27 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:54,119 WARNING 47 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:54,143 WARNING 47 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:54,144 WARNING 47 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:54,144 WARNING 47 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:56,369 WARNING 67 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:56,386 WARNING 67 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:56,386 WARNING 67 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:56,387 WARNING 67 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:26:57,867 WARNING 67 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+Found existing user: "discovery"
+Adding user "discovery" to groups []
+Removing user "discovery" from groups []
+2025-11-11 23:26:59,802 WARNING 87 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:59,846 WARNING 87 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:59,847 WARNING 87 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:26:59,848 WARNING 87 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:27:01,793 WARNING 87 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+Found existing user: "lms_catalog_service_user"
+Adding user "lms_catalog_service_user" to groups []
+Removing user "lms_catalog_service_user" from groups []
+2025-11-11 23:27:03,549 WARNING 107 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:03,566 WARNING 107 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:03,566 WARNING 107 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:03,567 WARNING 107 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:27:05,338 WARNING 107 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+2025-11-11 23:27:05,754 INFO 107 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:97 - Updated discovery-dev application with id: 4, client_id: discovery-dev, and client_secret: dsOziFwP
+2025-11-11 23:27:05,755 INFO 107 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:117 - Updated application access for discovery-dev with scopes: user_id
+2025-11-11 23:27:07,474 WARNING 127 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:07,496 WARNING 127 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:07,497 WARNING 127 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:07,497 WARNING 127 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:27:08,944 WARNING 127 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+2025-11-11 23:27:09,392 INFO 127 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:97 - Updated discovery-sso-dev application with id: 5, client_id: discovery-sso-dev, and client_secret: fUcjFNCo
+2025-11-11 23:27:09,394 INFO 127 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:117 - Updated application access for discovery-sso-dev with scopes: user_id
+2025-11-11 23:27:10,579 WARNING 147 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:10,598 WARNING 147 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:10,598 WARNING 147 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:10,599 WARNING 147 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:27:12,057 WARNING 147 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+2025-11-11 23:27:12,496 INFO 147 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:97 - Updated discovery application with id: 6, client_id: discovery, and client_secret: dsOziFwP
+2025-11-11 23:27:12,497 INFO 147 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:117 - Updated application access for discovery with scopes: user_id
+2025-11-11 23:27:13,742 WARNING 167 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:13,762 WARNING 167 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:13,762 WARNING 167 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:13,763 WARNING 167 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:27:15,379 WARNING 167 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+2025-11-11 23:27:15,813 INFO 167 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:97 - Updated discovery-sso application with id: 7, client_id: discovery-sso, and client_secret: fUcjFNCo
+2025-11-11 23:27:15,814 INFO 167 [openedx.core.djangoapps.oauth_dispatch.management.commands.create_dot_application] [user None] [ip None] create_dot_application.py:117 - Updated application access for discovery-sso with scopes: user_id
+2025-11-11 23:27:17,009 WARNING 187 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:17,027 WARNING 187 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:17,028 WARNING 187 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/fs/opener/__init__.py:6: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs.opener')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  __import__("pkg_resources").declare_namespace(__name__)
+
+2025-11-11 23:27:17,028 WARNING 187 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/pkg_resources/__init__.py:2331: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(parent)
+
+2025-11-11 23:27:18,615 WARNING 187 [py.warnings] [user None] [ip None] warnings.py:110 - /openedx/venv/lib/python3.11/site-packages/drf_yasg/views.py:84: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+  warnings.warn(
+
+System check identified some issues:
+
+WARNINGS:
+embargo.GlobalRestrictedCountry.country: (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+	HINT: ForeignKey(unique=True) is usually better served by a OneToOneField.
+Traceback (most recent call last):
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/query.py", line 916, in get_or_create
+    return self.get(**kwargs), False
+           ^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/query.py", line 637, in get
+    raise self.model.DoesNotExist(
+django.contrib.sites.models.Site.DoesNotExist: Site matching query does not exist.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/backends/mysql/base.py", line 75, in execute
+    return self.cursor.execute(query, args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/MySQLdb/cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/MySQLdb/cursors.py", line 330, in _query
+    db.query(q)
+  File "/openedx/venv/lib/python3.11/site-packages/MySQLdb/connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+MySQLdb.IntegrityError: (1062, "Duplicate entry 'local.overhang.io' for key 'django_site.django_site_domain_a2e37b91_uniq'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/openedx/edx-platform/./manage.py", line 99, in <module>
+    execute_from_command_line([sys.argv[0]] + django_args)
+  File "/openedx/venv/lib/python3.11/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/openedx/venv/lib/python3.11/site-packages/django/core/management/__init__.py", line 436, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+  File "/openedx/venv/lib/python3.11/site-packages/django/core/management/base.py", line 412, in run_from_argv
+    self.execute(*args, **cmd_options)
+  File "/openedx/venv/lib/python3.11/site-packages/django/core/management/base.py", line 458, in execute
+    output = self.handle(*args, **options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/edx-platform/openedx/core/djangoapps/site_configuration/management/commands/create_or_update_site_configuration.py", line 91, in handle
+    site, created = Site.objects.get_or_create(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/query.py", line 923, in get_or_create
+    return self.create(**params), True
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/query.py", line 658, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/base.py", line 814, in save
+    self.save_base(
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/base.py", line 877, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/base.py", line 1020, in _save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/base.py", line 1061, in _do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/query.py", line 1805, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/models/sql/compiler.py", line 1822, in execute_sql
+    cursor.execute(sql, params)
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/django/db/backends/mysql/base.py", line 75, in execute
+    return self.cursor.execute(query, args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/MySQLdb/cursors.py", line 179, in execute
+    res = self._query(mogrified_query)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/openedx/venv/lib/python3.11/site-packages/MySQLdb/cursors.py", line 330, in _query
+    db.query(q)
+  File "/openedx/venv/lib/python3.11/site-packages/MySQLdb/connections.py", line 280, in query
+    _mysql.connection.query(self, query)
+django.db.utils.IntegrityError: (1062, "Duplicate entry 'local.overhang.io' for key 'django_site.django_site_domain_a2e37b91_uniq'")
+
+Error: Command failed with status 1: docker compose -f /Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.yml -f /Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.prod.yml --project-name tutor_local -f /Users/tamagusko/Library/Application Support/tutor/env/local/docker-compose.jobs.yml run --rm -T lms-job sh -e -c # Modify users created with an incorrect email and that might clash with the newly created users
+./manage.py lms shell -c \
+  "from django.contrib.auth import get_user_model;\
+  get_user_model().objects.filter(username='discovery').exclude(email='discovery@openedx').update(email='discovery@openedx')"
+./manage.py lms shell -c \
+  "from django.contrib.auth import get_user_model;\
+  get_user_model().objects.filter(username='lms_catalog_service_user').exclude(email='lms_catalog_service_user@openedx').update(email='lms_catalog_service_user@openedx')"
+
+./manage.py lms shell -c \
+  "from openedx.core.djangoapps.programs.models import ProgramsApiConfig;\
+  ProgramsApiConfig.current().enabled or \
+  ProgramsApiConfig.objects.create(marketing_path='/programs', enabled=True)"
+
+./manage.py lms manage_user discovery discovery@openedx --staff --superuser --unusable-password
+./manage.py lms manage_user lms_catalog_service_user lms_catalog_service_user@openedx --staff --unusable-password
+
+# Development client
+./manage.py lms create_dot_application \
+    --grant-type client-credentials \
+    --redirect-uris "http://discovery.local.overhang.io:8381/complete/edx-oauth2/" \
+    --client-id discovery-dev \
+    --client-secret dsOziFwP \
+    --scopes user_id \
+    --skip-authorization \
+    --update \
+    discovery-dev \
+    discovery
+./manage.py lms create_dot_application \
+    --grant-type authorization-code \
+    --redirect-uris "http://discovery.local.overhang.io:8381/complete/edx-oauth2/" \
+    --client-id discovery-sso-dev \
+    --client-secret fUcjFNCo \
+    --scopes user_id \
+    --skip-authorization \
+    --update \
+    discovery-sso-dev \
+    discovery
+
+# Production client
+./manage.py lms create_dot_application \
+    --grant-type client-credentials \
+    --redirect-uris "http://discovery.local.overhang.io/complete/edx-oauth2/" \
+    --client-id discovery \
+    --client-secret dsOziFwP \
+    --scopes user_id \
+    --skip-authorization \
+    --update \
+    discovery \
+    discovery
+./manage.py lms create_dot_application \
+    --grant-type authorization-code \
+    --redirect-uris "http://discovery.local.overhang.io/complete/edx-oauth2/" \
+    --client-id discovery-sso \
+    --client-secret fUcjFNCo \
+    --scopes user_id \
+    --skip-authorization \
+    --update \
+    discovery-sso \
+    discovery
+
+# The COURSE_CATALOG_API_URL used to be stored in a setting, but is now a site
+# configuration -- which means that it takes different values for different
+# sites. This is important because the programs and courses returned for each
+# site will differ.
+./manage.py lms create_or_update_site_configuration local.overhang.io --configuration '{"COURSE_CATALOG_API_URL": "http://discovery.local.overhang.io/api/v1"}' --enabled
+./manage.py lms create_or_update_site_configuration local.overhang.io:8000 --configuration '{"COURSE_CATALOG_API_URL": "http://discovery.local.overhang.io:8381/api/v1"}' --enabled
