@@ -5,7 +5,7 @@
 [![Open edX](https://img.shields.io/badge/Open%20edX-Palm-blue)](https://openedx.org/)
 [![Tutor](https://img.shields.io/badge/Tutor-17.x-green)](https://docs.tutor.overhang.io/)
 
-This repository contains the complete Docker-based Open edX environment for the **TRIGGER** project, powered by [Tutor](https://docs.tutor.overhang.io/).
+This repository contains a Docker-based Open edX environment for the **TRIGGER** project, powered by [Tutor](https://docs.tutor.overhang.io/).
 
 **Repository:** https://github.com/tamagusko/trigger
 
@@ -144,63 +144,10 @@ This installation includes the following Tutor plugins:
 - **RAM:** 16GB minimum
 - **OS:** Ubuntu 20.04 or 22.04 LTS
 
-## Support
-
-### Tutor Documentation
-- Official Docs: https://docs.tutor.overhang.io/
-- Community Forum: https://discuss.overhang.io/
-
-### Open edX Documentation
-- Official Docs: https://docs.openedx.org/
-- Community: https://open.edx.org/community/
-
-### TRIGGER Project
-- Website: https://trigger-project.eu/
-- Contact: [Add contact information]
-
-## Troubleshooting
-
-If you encounter issues:
-
-1. Check the [Setup Guide](docs/setup.md) for common problems
-2. Review Docker logs: `tutor local logs -f`
-3. Ensure Docker has enough resources allocated
-4. Visit the Tutor community forum: https://discuss.overhang.io/
-
-## Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-For questions or contributions, please:
-- Open an issue on GitHub
-- Check existing documentation
-- Contact the TRIGGER team via the project website
 
 ## License
 
-MIT License
-
-Copyright (c) 2024 TRIGGER Project
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-**Note:** This project uses Open edX and Tutor, which are licensed under the GNU Affero General Public License (AGPL). See the [LICENSE](LICENSE) file for complete details.
+MIT License. See the [LICENSE](LICENSE) file for complete details.
 
 ## Acknowledgments
 
